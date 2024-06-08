@@ -2,3 +2,47 @@ sudo su
 
 apt install apache2 apache2-doc php libapache2-mod-php
 
+cd /etc/apache2
+
+ls -la
+
+nano apache2.conf
+
+// configura o arquivo {{
+
+// Define o tempo máximo (em segundos) que o servidor esperará para completar a leitura ou escrita de uma solicitação antes de encerrar a conexão.
+Timeout 30
+
+// Permite que o Apache realize consultas DNS reversas para registrar nomes de host em vez de endereços IP nos logs
+HostnameLookups Off
+
+// Garante que nenhum conteúdo sob /usr/share/ seja acessível via web.
+#<Directory /usr/share>
+#       AllowOverride None
+#       Require all granted
+#</Directory>
+
+// Não permite que o Apache mostre uma listagem de diretórios se não houver um arquivo de índice.
+<Directory /var/www/>
+    Options FollowSymLinks
+    AllowOverride None
+    Require all granted
+</Directory>
+}}
+
+// configurar charset utf8 {{
+cd conf-available
+
+nano charset.conf
+
+AddDefaultCharset UTF-8
+}}
+
+a2dismod status
+
+systemctl restart apache2
+
+systemctl status apache2
+
+links 127.0.0.1
+
