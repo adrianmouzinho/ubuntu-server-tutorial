@@ -1,0 +1,7 @@
+sudo su
+
+apt update
+
+apt dist-upgrade
+
+apt install links net-tools iptraf-ng

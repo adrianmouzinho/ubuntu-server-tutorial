@@ -1,0 +1,4 @@
+sudo su
+
+apt install apache2 apache2-doc php libapache2-mod-php
+
