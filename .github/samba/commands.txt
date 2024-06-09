@@ -1,0 +1,71 @@
+sudo su
+
+apt install samba samba-common
+
+cd /etc/samba
+
+ls -la
+
+cp smb.conf smb.conf.bkp
+
+echo 0 > smb.conf
+
+nano smb.conf
+
+// configurar o arquivo {{
+[global]
+netbios name = ifma_adrian
+workgroup = ifma_adrian
+server string = Servidor dos Alunos
+log file = /var/log/samba/log.%m
+security = user
+
+[public]
+path = /home/samba
+guest ok = yes
+browseable = yes
+writeable = yes
+printable = no
+create mask = 0777
+force create mode = 0777
+
+[homes]
+Comment = Diretórios dos usuários registrados.
+path = /home/%U
+valid users = %U
+hosts allow = 192.168.1.254, 192.168.1.116
+read only = yes
+create mask = 0700
+directory mask = 0700
+browseable = no
+
+[printers]
+comment = Compartilhando as Impressoras
+browseable = no
+path = /var/tmp
+printable = yes
+guest ok = no
+read only = yes
+
+[alunosifma]
+Comment = Diretórios dos alunos
+path = /var/samba/alunosifma
+valid users = usuario1, usuario2
+create mask = 0777
+force create mode = 0777
+guest ok = yes
+}}
+
+mkdir /home/samba
+
+chmod 777 /home/samba
+
+mkdir -p /var/samba/alunosifma
+
+chmod 777 /var/samba/alunosifma
+
+chmod -R 777 /var/samba
+
+systemctl restart smbd
+
+systemctl status smbd

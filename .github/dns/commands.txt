@@ -1,6 +1,6 @@
 sudo su
 
-apt install bind9 bind9-utils
+apt install bind9 bind9utils
 
 cd /etc/netplan
 
