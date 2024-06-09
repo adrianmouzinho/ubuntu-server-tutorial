@@ -1,0 +1,104 @@
+sudo su
+
+apt install bind9 bind9-utils
+
+nano 50-cloud-init.yaml
+
+cd /etc/netplan
+
+// configurar o arquivo {{
+  network:
+    ethernets:
+        enp0s3:
+            dhcp4: no
+            addresses:
+              - 192.168.1.254/24
+            routes:
+              - to: default
+                via: 192.168.1.1
+    version: 2
+}}
+
+netplan apply
+
+ip a
+
+cd /etc/bind
+
+ls -la
+
+nano named.conf.local
+
+// configurar o arquivo {{
+  zone "adrian.com" {
+  type master;
+  file "/etc/bind/db.adrian.com";
+  };
+
+  zone "1.168.192.in-addr.arpa" {
+  type master;
+  file "/etc/bind/db.1.168.192.in-addr.arpa";
+  };
+}}
+
+nano named.conf.options
+
+// adicione ao arquivo {{
+  forwarders {
+  	1.1.1.1;
+  };
+}}
+
+cp db.local db.adrian.com
+
+nano db.adrian.com
+
+// configurar o arquivo {{
+  $TTL    604800
+  @       IN      SOA     servidor.adrian.com. root.adrian.com. (
+                                2         ; Serial
+                          604800         ; Refresh
+                            86400         ; Retry
+                          2419200         ; Expire
+                          604800 )       ; Negative Cache TTL
+  ;
+  @       IN      NS      servidor.adrian.com.
+  servidor        IN      A       192.168.1.254
+  www.    IN      A       192.168.1.254
+}}
+
+cp db.0 db.0.168.192.in-addr.arpa
+
+nano db.0.168.192.in-addr.arpa
+
+// configurar o arquivo {{
+  $TTL    604800
+  @       IN      SOA     servidor.adrian.com. root.adrian.com. (
+                                1         ; Serial
+                          604800         ; Refresh
+                            86400         ; Retry
+                          2419200         ; Expire
+                          604800 )       ; Negative Cache TTL
+  ;
+  @       IN      NS      servidor.adrian.com.
+  254     IN      PTR     servidor.adrian.com.
+  254     IN      PTR     www
+}}
+
+nano /etc/resolv.conf
+
+// configurar o arquivo {{
+  nameserver 192.168.1.254
+}}
+
+nano /etc/hosts
+
+// configurar o arquivo {{
+  192.168.1.254 www.adrian.com
+}}
+
+systemctl restart bind9
+
+systemctl status bind9
+
+nslookup servidor.adrian.com
