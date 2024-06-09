@@ -2,9 +2,9 @@ sudo su
 
 apt install bind9 bind9-utils
 
-nano 50-cloud-init.yaml
-
 cd /etc/netplan
+
+nano 50-cloud-init.yaml
 
 // configurar o arquivo {{
   network:
