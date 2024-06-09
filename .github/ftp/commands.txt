@@ -1,0 +1,96 @@
+sudo su
+
+apt install proftpd
+
+cd /etc/proftpd
+
+ls -la
+
+nano proftpd.conf
+
+// configurar o arquivo {{
+  // Define o nome do servidor FTP
+  ServerName "Nome do Servidor"
+
+  // Exibe links de sistema
+  ShowSymlinks off
+
+  // Limita os usuários somente para os diretórios do usuário
+  DefaultRoot ~
+
+  // Valida comandos shell
+  RequireValidShell off
+
+  // Limita o número de usuários
+  MaxInstances 5
+
+  // Libera acesso anônimo
+  <Anonymous ~ftp>
+    User ftp
+    Group nogroup
+    # We want clients to be able to login with "anonymous" as well as "ftp"
+    UserAlias anonymous ftp
+    # Cosmetic changes, all files belongs to ftp user
+    DirFakeUser on ftp
+    DirFakeGroup on ftp
+    # Limit the maximum number of anonymous logins
+    MaxClients 10
+
+    # We want 'welcome.msg' displayed at login, and '.message' displayed
+    # in each newly chdired directory.
+    DisplayLogin welcome.msg
+    DisplayChdir .message
+
+    # Limit WRITE everywhere in the anonymous chroot
+    <Directory *>
+      <Limit WRITE>
+        DenyAll
+      </Limit>
+    </Directory>
+
+    # Uncomment this if you're brave.
+    # <Directory incoming>
+    #   # Umask 022 is a good standard umask to prevent new files and dirs
+    #   # (second parm) from being group and world writable.
+    #   Umask 022  022
+    #   <Limit READ WRITE>
+    #     DenyAll
+    #     </Limit>
+    #       <Limit STOR>
+    #         AllowAll
+    #     </Limit>
+    # </Directory>
+
+  </Anonymous>
+
+  // Limita a taxa de download do servidor FTP
+  TransferRate RETR 8:10
+
+  // Validar login de root
+  RootLogin off
+}}
+
+sudo adduser usuarioftp1
+
+cd /home/usuarioftp1
+
+mkdir ftp
+
+nano /etc/passwd
+
+// configurar o arquivo {{
+  // configura a pasta ftp e bloqueia o login do usuário
+  usuarioftp1:x:1001:1001:Usuario FTP 01,,,:/home/usuarioftp1/ftp:/bin/nologin
+}}
+
+chown usuarioftp1:usuarioftp1 ftp
+
+chmod 770 ftp
+
+systemctl restart proftpd
+
+touch ftp/filme.mov
+
+touch ftp/imagem.jpg
+
+touch ftp/texto.txt
