@@ -13,13 +13,6 @@ echo 0 > smb.conf
 nano smb.conf
 
 // configurar o arquivo {{
-[global]
-netbios name = ifma_adrian
-workgroup = ifma_adrian
-server string = Servidor dos Alunos
-log file = /var/log/samba/log.%m
-security = user
-
 [public]
 path = /home/samba
 guest ok = yes
@@ -28,24 +21,6 @@ writeable = yes
 printable = no
 create mask = 0777
 force create mode = 0777
-
-[homes]
-Comment = Diretórios dos usuários registrados.
-path = /home/%U
-valid users = %U
-hosts allow = 192.168.1.254, 192.168.1.116
-read only = yes
-create mask = 0700
-directory mask = 0700
-browseable = no
-
-[printers]
-comment = Compartilhando as Impressoras
-browseable = no
-path = /var/tmp
-printable = yes
-guest ok = no
-read only = yes
 
 [alunosifma]
 Comment = Diretórios dos alunos
