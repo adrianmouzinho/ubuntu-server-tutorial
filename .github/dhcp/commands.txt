@@ -1,0 +1,84 @@
+// desligue a máquina virtual
+
+// habilite um segundo adaptador de rede na máquina virtual e coloque no modo NAT
+
+// inicie a máquina virtual
+
+sudo su
+
+ip a
+
+cd /etc/netplan
+
+nano 50-cloud-init.yaml
+
+// configurar o arquivo {{
+  network:
+    ethernets:
+        enp0s3:
+            dhcp4: false
+            addresses:
+              - 192.168.1.254/24
+            routes:
+              - to: default
+                via: 192.168.1.1
+            nameservers:
+              addresses:
+                - 192.168.1.254
+        enp0s8:
+            dhcp4: false
+            addresses:
+              - 10.0.0.254/24
+    version: 2
+}}
+
+netplan apply
+
+ip a
+
+apt install isc-dhcp-server
+
+nano /etc/default/isc-dhcp-server
+
+// configurar o arquivo {{
+  DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+  INTERFACES="enp0s8"
+}}
+
+cd /etc/dhcp
+
+ls -la
+
+nano dhcpd.conf
+
+// configurar o arquivo {{
+option domain-name "adrian.com";
+option domain-name-servers 1.1.1.1, 9.9.9.9;
+
+default-lease-time 86400;
+max-lease-time 172800;
+
+ddns-update-style none;
+
+authoritative;
+
+subnet 10.0.0.0 netmask 255.255.255.0 {
+  range 10.0.0.100 10.0.0.200;
+  option domain-name-servers 1.1.1.1, 9.9.9.9;
+  option domain-name "adrian.com";
+#  option subnet-mask 255.255.255.0;
+  option routers 10.0.0.1;
+  option broadcast-address 10.0.0.255;
+  default-lease-time 86400;
+  max-lease-time 172800;
+}
+
+host impressora {
+  hardware ethernet 08:00:07:26:c0:a5;
+  fixed-address 10.0.0.150;
+}
+}}
+
+systemctl restart isc-dhcp-server
+
+systemctl status isc-dhcp-server
