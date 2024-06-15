@@ -1,0 +1,81 @@
+sudo su
+
+apt install squid
+
+cd /etc/squid
+
+ls -la
+
+cp squid.conf squid.conf.bkp
+
+echo 0 > squid.conf
+
+nano squid.conf
+
+// configurar o arquivo {{
+  http_port 3128
+
+  cache_mgr adrian
+
+  error_directory /usr/share/squid/errors/Portuguese
+
+  cache_mem 1024 MB
+
+  cache_dir ufs /var/spool/squid 10000 16 256
+
+  maximum_object_size_in_memory 64 KB
+  maximum_object_size 512 MB
+
+  cache_swap_low 70
+  cache_swap_high 95
+
+  access_log daemon:/var/log/squid/access.log squid
+  cache_log /var/log/squid/cache.log
+
+  acl localnet src 192.168.1.0/24
+  acl Safe_ports port 80 # http
+  acl Safe_ports port 21 # ftp
+  acl Safe_ports port 443 # https
+
+  acl CONNECT method CONNECT
+
+  http_access deny !Safe_ports
+
+  acl sitesproibidos url_regex -i "/etc/squid/sitesproibidos"
+  http_access deny localnet sitesproibidos
+
+  http_access allow localnet
+  http_access allow all
+}}
+
+mkdir -p /var/spool/squid
+
+chmod 777 -R /var/spool/squid
+
+chown www-data:www-data /var/spool/squid
+
+nano sitesproibidos
+
+// configurar o arquivo {{
+  globo
+  r7
+  uol
+}}
+
+squid -k check
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+ip a
+
+iptables -t nat -A POSTROUTING -o enp0s3 -s 192.168.1.0/24 -j MASQUERADE
+
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3128
+
+squid -k shutdown
+
+squid -z
+
+systemctl restart squid
+
+systemctl status squid
